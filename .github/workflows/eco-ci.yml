@@ -1,8 +1,7 @@
 name: Daily Tests with Energy Measurement
 run-name: Scheduled - DEV Branch
 on:
-  schedule:
-    - cron: '0 0 * * *'
+  push
 
 permissions:
   read-all
