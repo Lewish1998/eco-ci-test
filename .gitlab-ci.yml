@@ -1,0 +1,42 @@
+image: ubuntu:22.04
+include:
+  remote: 'https://raw.githubusercontent.com/green-coding-solutions/eco-ci-energy-estimation/main/eco-ci-gitlab.yml'
+
+variables:
+  ECO_CI_SEND_DATA: "false"
+
+# trigger rebuild
+stages:
+  - test
+
+before_script:
+  - apt-get update
+  - apt-get install git jq curl -y # git, jq and curl are dependencies for Eco CI
+
+test-job:   # This job runs in the test stage.
+  stage: test    # It only starts when the job in the build stage completes successfully.
+  script:
+
+    - !reference [.start_measurement, script]
+
+    - pip install -r requirements.txt
+
+    - export ECO_CI_LABEL="pytest" # Set a custom name for a step
+    
+    - pytest
+
+    - !reference [.get_measurement, script] # take a measurement
+
+    - sleep 10s # Placeholder for more main pipeline logic here
+
+    - export ECO_CI_LABEL="Sleep 10"
+    - !reference [.get_measurement, script] # Take another measurement
+
+    - !reference [.display_results, script] # Show the results
+
+  artifacts:
+    paths:
+      - eco-ci-output.txt
+      - eco-ci-total-data.json # only if you have JSON output active
+    reports:
+      metrics: metrics.txt
